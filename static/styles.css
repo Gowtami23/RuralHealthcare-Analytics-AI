@@ -1,4 +1,4 @@
-/* Custom Dashboard Styles - Increased Typography & Component Sizing */
+/* Custom Dashboard Styles - Typography & Responsive Component Sizing */
 :root {
   color-scheme: dark;
 }
@@ -11,7 +11,7 @@
 
 .tab-btn.active {
   background-color: #2563eb;
-  color: #ffffff;
+  color: #ffffff !important;
   box-shadow: 0 4px 14px rgba(37, 99, 235, 0.4);
 }
 
@@ -24,25 +24,103 @@
   background-color: rgba(255, 255, 255, 0.08);
 }
 
-/* Date Picker Input Fix - Spacious, Fully Editable */
-input[type="date"], input[type="text"], input[type="number"], select, textarea {
+/* Input & Select Common Styles */
+input[type="date"], input[type="tel"], input[type="text"], input[type="number"], select, textarea {
   font-size: 0.95rem !important; /* 15px */
   padding: 0.75rem 1rem !important;
+}
+
+html.dark input[type="date"], html.dark input[type="tel"], html.dark input[type="text"], html.dark input[type="number"], html.dark select, html.dark textarea {
   color-scheme: dark !important;
   background-color: #0f172a !important;
   color: #f8fafc !important;
   border-color: #334155 !important;
 }
 
-input[type="date"]::-webkit-calendar-picker-indicator {
+html.dark input[type="date"]::-webkit-calendar-picker-indicator {
   filter: invert(1);
   cursor: pointer;
   padding: 4px;
   font-size: 1.1rem;
 }
 
-input[type="date"]::-webkit-datetime-edit-fields-wrapper {
-  color: #f8fafc !important;
+/* Light Theme Overrides */
+html:not(.dark) {
+  color-scheme: light !important;
+}
+
+html:not(.dark) body {
+  background-color: #f1f5f9 !important;
+  color: #0f172a !important;
+}
+
+html:not(.dark) header {
+  background-color: #ffffff !important;
+  border-color: #cbd5e1 !important;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+}
+
+html:not(.dark) nav {
+  background-color: #f8fafc !important;
+  border-color: #e2e8f0 !important;
+}
+
+html:not(.dark) .tab-btn:not(.active) {
+  color: #475569 !important;
+}
+
+html:not(.dark) .tab-btn:not(.active):hover {
+  color: #1e293b !important;
+  background-color: #e2e8f0 !important;
+}
+
+html:not(.dark) .bg-slate-800\/60,
+html:not(.dark) .bg-slate-800,
+html:not(.dark) .bg-slate-900\/80,
+html:not(.dark) .bg-slate-900\/60,
+html:not(.dark) .bg-slate-900 {
+  background-color: #ffffff !important;
+  border-color: #cbd5e1 !important;
+  color: #0f172a !important;
+}
+
+html:not(.dark) input[type="date"],
+html:not(.dark) input[type="tel"],
+html:not(.dark) input[type="text"],
+html:not(.dark) input[type="number"],
+html:not(.dark) select,
+html:not(.dark) textarea {
+  background-color: #f8fafc !important;
+  color: #0f172a !important;
+  border-color: #cbd5e1 !important;
+}
+
+html:not(.dark) input[type="date"]::-webkit-calendar-picker-indicator {
+  filter: invert(0) !important;
+  cursor: pointer;
+}
+
+html:not(.dark) .text-white {
+  color: #0f172a !important;
+}
+
+html:not(.dark) .text-slate-100 {
+  color: #0f172a !important;
+}
+
+html:not(.dark) .text-slate-200 {
+  color: #1e293b !important;
+}
+
+html:not(.dark) .text-slate-300,
+html:not(.dark) .text-slate-400 {
+  color: #475569 !important;
+}
+
+html:not(.dark) #theme-toggle-btn {
+  background-color: #f8fafc !important;
+  color: #1e293b !important;
+  border-color: #cbd5e1 !important;
 }
 
 /* Custom Scrollbar */

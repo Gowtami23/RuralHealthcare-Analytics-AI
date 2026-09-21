@@ -4,12 +4,15 @@ let rhadiChartInstance = null;
 let doughnutChartInstance = null;
 
 document.addEventListener('DOMContentLoaded', () => {
+  // Initialize saved theme (Light / Dark)
+  const savedTheme = localStorage.getItem('theme') || 'dark';
+  applyTheme(savedTheme);
+
   // Initialize appointment date picker to today's date
   const dateInput = document.getElementById('appt-date');
   if (dateInput) {
     const today = new Date().toISOString().split('T')[0];
     dateInput.value = today;
-    dateInput.min = today;
   }
 
   loadOverview();
@@ -21,6 +24,30 @@ document.addEventListener('DOMContentLoaded', () => {
   loadRecords();
   loadHealthInfo();
 });
+
+function toggleTheme() {
+  const html = document.documentElement;
+  const isDark = html.classList.contains('dark');
+  const newTheme = isDark ? 'light' : 'dark';
+  localStorage.setItem('theme', newTheme);
+  applyTheme(newTheme);
+}
+
+function applyTheme(theme) {
+  const html = document.documentElement;
+  const themeIcon = document.getElementById('theme-icon');
+  const themeText = document.getElementById('theme-text');
+
+  if (theme === 'light') {
+    html.classList.remove('dark');
+    if (themeIcon) themeIcon.className = 'fa-solid fa-moon text-indigo-600 mr-2 text-sm';
+    if (themeText) themeText.innerText = 'Dark Mode';
+  } else {
+    html.classList.add('dark');
+    if (themeIcon) themeIcon.className = 'fa-solid fa-sun text-amber-400 mr-2 text-sm';
+    if (themeText) themeText.innerText = 'Light Mode';
+  }
+}
 
 function switchTab(tabId) {
   document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
@@ -421,7 +448,7 @@ async function submitReminder(event) {
   }
 }
 
-// --- PATIENT HEALTH RECORDS ---
+// --- PATIENT HEALTH RECORDS WITH PHONE VALIDATION & DUPLICATE CHECK ---
 async function loadRecords() {
   try {
     const res = await fetch('/api/records');
@@ -430,20 +457,25 @@ async function loadRecords() {
     const list = document.getElementById('records-list');
     list.innerHTML = '';
 
+    if (recs.length === 0) {
+      list.innerHTML = `<p class="text-xs text-slate-400">No stored patient health records found.</p>`;
+      return;
+    }
+
     recs.forEach(r => {
       const card = document.createElement('div');
-      card.className = "bg-slate-900/60 border border-slate-700 p-5 rounded-2xl";
+      card.className = "bg-slate-900/60 border border-slate-700 p-5 rounded-2xl shadow-md";
       card.innerHTML = `
-        <div class="flex justify-between items-start mb-2">
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-2 mb-2">
           <div>
-            <h4 class="text-base font-bold text-white">${r.patient_name} <span class="text-xs font-normal text-slate-400">(${r.age} yrs, ${r.gender})</span></h4>
-            <p class="text-xs text-blue-400 font-semibold mt-0.5"><i class="fa-solid fa-notes-medical mr-1"></i>${r.condition}</p>
+            <h4 class="text-base font-bold text-white">${r.patient_name} <span class="text-xs font-normal text-slate-400">(${r.age} yrs, ${r.gender || 'General'})</span></h4>
+            <p class="text-xs text-blue-400 font-semibold mt-0.5"><i class="fa-solid fa-phone text-indigo-400 mr-1"></i>Contact: ${r.contact || 'N/A'} &bull; <i class="fa-solid fa-notes-medical mr-1"></i>${r.condition}</p>
           </div>
           <span class="px-2.5 py-1 text-xs font-bold bg-rose-500/20 text-rose-300 rounded-md border border-rose-500/30">Blood Group: ${r.blood_group}</span>
         </div>
-        <p class="text-xs text-slate-300 bg-slate-800/80 p-3 rounded-xl border border-slate-700/60 mt-3">${r.notes}</p>
+        <p class="text-xs text-slate-300 bg-slate-800/80 p-3 rounded-xl border border-slate-700/60 mt-3">${r.notes || 'No extra observations recorded.'}</p>
         <div class="text-right mt-2">
-          <span class="text-[10px] text-slate-500">Recorded on: ${r.record_date}</span>
+          <span class="text-[10px] text-slate-400">Recorded on: ${r.record_date || 'Recent'}</span>
         </div>
       `;
       list.appendChild(card);
@@ -455,13 +487,41 @@ async function loadRecords() {
 
 async function submitRecord(event) {
   event.preventDefault();
+  
+  const submitBtn = document.getElementById('btn-submit-rec');
+  const statusMsg = document.getElementById('rec-status-msg');
+
+  const rawContact = document.getElementById('rec-contact').value.trim();
+  let cleanedPhone = rawContact.replace(/[\s\-\(\)\+]/g, '');
+  if (cleanedPhone.startsWith('91') && cleanedPhone.length === 12) {
+    cleanedPhone = cleanedPhone.substring(2);
+  } else if (cleanedPhone.startsWith('0') && cleanedPhone.length === 11) {
+    cleanedPhone = cleanedPhone.substring(1);
+  }
+
+  // Regex validation for 10-digit mobile number
+  const phoneRegex = /^[6-9]\d{9}$/;
+  if (!phoneRegex.test(cleanedPhone)) {
+    if (statusMsg) {
+      statusMsg.className = "p-3.5 mb-3 rounded-xl text-xs font-bold border bg-rose-500/20 text-rose-300 border-rose-500/40 block";
+      statusMsg.innerHTML = `<i class="fa-solid fa-triangle-exclamation mr-1.5 text-rose-400"></i> Please enter a valid 10-digit mobile number starting with 6, 7, 8, or 9.`;
+    }
+    return;
+  }
+
   const payload = {
     patient_name: document.getElementById('rec-name').value,
+    contact: cleanedPhone,
     age: document.getElementById('rec-age').value,
     blood_group: document.getElementById('rec-blood').value,
     condition: document.getElementById('rec-cond').value,
     notes: document.getElementById('rec-notes').value
   };
+
+  if (submitBtn) {
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = `<i class="fa-solid fa-circle-notch fa-spin mr-2"></i>Saving Patient Record...`;
+  }
 
   try {
     const res = await fetch('/api/records', {
@@ -470,15 +530,38 @@ async function submitRecord(event) {
       body: JSON.stringify(payload)
     });
     const resp = await res.json();
+
     if (resp.success) {
-      alert("Patient health record saved successfully!");
+      if (statusMsg) {
+        statusMsg.className = "p-3.5 mb-3 rounded-xl text-xs font-bold border bg-emerald-500/20 text-emerald-300 border-emerald-500/40 block";
+        statusMsg.innerHTML = `<i class="fa-solid fa-circle-check mr-1.5 text-emerald-400"></i> Patient details and health record saved successfully!`;
+      }
       document.getElementById('rec-name').value = '';
+      document.getElementById('rec-contact').value = '';
       document.getElementById('rec-cond').value = '';
       document.getElementById('rec-notes').value = '';
       loadRecords();
+
+      setTimeout(() => {
+        if (statusMsg) statusMsg.className = "hidden";
+      }, 5000);
+    } else {
+      if (statusMsg) {
+        statusMsg.className = `p-3.5 mb-3 rounded-xl text-xs font-bold border ${resp.warning ? 'bg-amber-500/20 text-amber-300 border-amber-500/40' : 'bg-rose-500/20 text-rose-300 border-rose-500/40'} block`;
+        statusMsg.innerHTML = `<i class="fa-solid fa-triangle-exclamation mr-1.5 text-amber-400"></i> ${resp.message}`;
+      }
     }
   } catch (err) {
     console.error("Error submitting record:", err);
+    if (statusMsg) {
+      statusMsg.className = "p-3.5 mb-3 rounded-xl text-xs font-bold border bg-rose-500/20 text-rose-300 border-rose-500/40 block";
+      statusMsg.innerHTML = `<i class="fa-solid fa-triangle-exclamation mr-1.5"></i> Failed to save record. Please check server connection.`;
+    }
+  } finally {
+    if (submitBtn) {
+      submitBtn.disabled = false;
+      submitBtn.innerHTML = `<i class="fa-solid fa-floppy-disk mr-2"></i>Save Patient Health Record`;
+    }
   }
 }
 

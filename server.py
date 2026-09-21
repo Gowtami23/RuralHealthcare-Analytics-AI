@@ -47,6 +47,7 @@ def init_db():
         CREATE TABLE IF NOT EXISTS patient_records (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             patient_name TEXT,
+            contact TEXT,
             age INTEGER,
             gender TEXT,
             blood_group TEXT,
@@ -57,6 +58,11 @@ def init_db():
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
     ''')
+    try:
+        c.execute("ALTER TABLE patient_records ADD COLUMN contact TEXT")
+    except Exception:
+        pass
+
     conn.commit()
     conn.close()
 
@@ -189,7 +195,7 @@ def get_locator():
     
     return jsonify([dict(r) for r in rows])
 
-# --- NEW FEATURE 2: APPOINTMENT MANAGEMENT ---
+# --- NEW FEATURE 2: APPOINTMENT MANAGEMENT WITH DUPLICATE PHONE CHECK & HEALTH RECORD STORE ---
 @app.route('/api/appointments', methods=['GET', 'POST'])
 def manage_appointments():
     conn = get_db_connection()
@@ -198,7 +204,7 @@ def manage_appointments():
         pname = data.get('patient_name', 'Anonymous')
         contact = data.get('contact', '').strip()
         
-        # Backend Phone Number Validation (Indian 10-digit mobile standard)
+        # Backend Phone Number Validation (Indian 10-digit mobile standard regex)
         clean_contact = re.sub(r'[\s\-\(\)\+]', '', contact)
         if clean_contact.startswith('91') and len(clean_contact) == 12:
             clean_contact = clean_contact[2:]
@@ -206,9 +212,20 @@ def manage_appointments():
             clean_contact = clean_contact[1:]
 
         if not (len(clean_contact) == 10 and clean_contact.isdigit() and clean_contact[0] in '6789'):
+            conn.close()
             return jsonify({
                 "success": False, 
                 "message": "Invalid phone number! Please enter a valid 10-digit mobile number starting with 6, 7, 8, or 9."
+            }), 400
+
+        # Check for Duplicate Phone Numbers under a different patient name
+        existing_appt = conn.execute("SELECT patient_name FROM appointments WHERE contact = ?", (clean_contact,)).fetchone()
+        if existing_appt and existing_appt['patient_name'].strip().lower() != pname.strip().lower():
+            conn.close()
+            return jsonify({
+                "success": False,
+                "warning": True,
+                "message": f"Duplicate Phone Number Warning: Mobile number {clean_contact} is already registered under patient '{existing_appt['patient_name']}'."
             }), 400
 
         fname = data.get('facility_name', 'Primary Health Centre')
@@ -218,13 +235,21 @@ def manage_appointments():
         adate = data.get('appointment_date', '2026-09-25')
         tslot = data.get('time_slot', '10:00 AM')
         
+        # Save Appointment
         conn.execute(
             "INSERT INTO appointments (patient_name, contact, facility_name, district, state, dept, appointment_date, time_slot, status) VALUES (?,?,?,?,?,?,?,?,?)",
             (pname, clean_contact, fname, district, state, dept, adate, tslot, 'Confirmed')
         )
+
+        # Automatically store patient details in Health Records Locker
+        conn.execute(
+            "INSERT INTO patient_records (patient_name, contact, age, gender, blood_group, condition, record_type, record_date, notes) VALUES (?,?,?,?,?,?,?,?,?)",
+            (pname, clean_contact, 28, 'General', 'O+', f"Facility Visit ({dept})", "Appointment Record", adate, f"Scheduled visit at {fname}. Contact: {clean_contact}")
+        )
+
         conn.commit()
         conn.close()
-        return jsonify({"success": True, "message": "Appointment booked successfully!"})
+        return jsonify({"success": True, "message": "Appointment booked and patient details stored in Health Records!"})
     else:
         rows = conn.execute("SELECT * FROM appointments ORDER BY id DESC").fetchall()
         conn.close()
@@ -254,13 +279,39 @@ def manage_reminders():
         conn.close()
         return jsonify([dict(r) for r in rows])
 
-# --- NEW FEATURE 4: PATIENT HEALTH RECORDS ---
+# --- NEW FEATURE 4: PATIENT HEALTH RECORDS WITH DUPLICATE CHECK ---
 @app.route('/api/records', methods=['GET', 'POST'])
 def manage_records():
     conn = get_db_connection()
     if request.method == 'POST':
         data = request.json or {}
-        pname = data.get('patient_name', 'Gowtami K.')
+        pname = data.get('patient_name', 'Gowtami K.').strip()
+        contact = data.get('contact', '').strip()
+        
+        # Phone Validation & Duplicate Check
+        clean_contact = re.sub(r'[\s\-\(\)\+]', '', contact)
+        if clean_contact:
+            if clean_contact.startswith('91') and len(clean_contact) == 12:
+                clean_contact = clean_contact[2:]
+            elif clean_contact.startswith('0') and len(clean_contact) == 11:
+                clean_contact = clean_contact[1:]
+
+            if not (len(clean_contact) == 10 and clean_contact.isdigit() and clean_contact[0] in '6789'):
+                conn.close()
+                return jsonify({
+                    "success": False,
+                    "message": "Invalid phone number! Enter a valid 10-digit mobile number."
+                }), 400
+
+            existing_rec = conn.execute("SELECT patient_name FROM patient_records WHERE contact = ?", (clean_contact,)).fetchone()
+            if existing_rec and existing_rec['patient_name'].strip().lower() != pname.lower():
+                conn.close()
+                return jsonify({
+                    "success": False,
+                    "warning": True,
+                    "message": f"Duplicate Phone Number Warning: Mobile number {clean_contact} is already registered under patient '{existing_rec['patient_name']}'."
+                }), 400
+
         age = data.get('age', 26)
         gender = data.get('gender', 'Female')
         bgroup = data.get('blood_group', 'O+')
@@ -270,12 +321,12 @@ def manage_records():
         notes = data.get('notes', 'Routine checkup completed.')
         
         conn.execute(
-            "INSERT INTO patient_records (patient_name, age, gender, blood_group, condition, record_type, record_date, notes) VALUES (?,?,?,?,?,?,?,?)",
-            (pname, age, gender, bgroup, cond, rtype, rdate, notes)
+            "INSERT INTO patient_records (patient_name, contact, age, gender, blood_group, condition, record_type, record_date, notes) VALUES (?,?,?,?,?,?,?,?,?)",
+            (pname, clean_contact, age, gender, bgroup, cond, rtype, rdate, notes)
         )
         conn.commit()
         conn.close()
-        return jsonify({"success": True, "message": "Health record saved successfully!"})
+        return jsonify({"success": True, "message": "Patient details and health record stored successfully!"})
     else:
         rows = conn.execute("SELECT * FROM patient_records ORDER BY id DESC").fetchall()
         conn.close()
