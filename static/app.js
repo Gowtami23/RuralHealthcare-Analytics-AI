@@ -47,6 +47,20 @@ function applyTheme(theme) {
     if (themeIcon) themeIcon.className = 'fa-solid fa-sun text-amber-400 mr-2 text-sm';
     if (themeText) themeText.innerText = 'Light Mode';
   }
+
+  // Refresh active charts with dynamic text colors
+  if (typeof loadOverview === 'function') loadOverview();
+  if (typeof loadStateRHADI === 'function') loadStateRHADI();
+}
+
+function getChartTextColor() {
+  const isDark = document.documentElement.classList.contains('dark');
+  return isDark ? '#f8fafc' : '#0f172a';
+}
+
+function getChartSubtextColor() {
+  const isDark = document.documentElement.classList.contains('dark');
+  return isDark ? '#94a3b8' : '#334155';
 }
 
 function switchTab(tabId) {
@@ -113,6 +127,8 @@ function renderStateRHADIChart(topStates) {
 
   const labels = topStates.map(s => s.State_UT).reverse();
   const scores = topStates.map(s => s.RHADI_State_Score).reverse();
+  const textColor = getChartTextColor();
+  const subtextColor = getChartSubtextColor();
 
   rhadiChartInstance = new Chart(ctx, {
     type: 'bar',
@@ -141,12 +157,12 @@ function renderStateRHADIChart(topStates) {
       scales: {
         x: {
           max: 100,
-          grid: { color: 'rgba(255, 255, 255, 0.05)' },
-          ticks: { color: '#94a3b8' }
+          grid: { color: document.documentElement.classList.contains('dark') ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.08)' },
+          ticks: { color: subtextColor, font: { size: 11, weight: 'bold' } }
         },
         y: {
           grid: { display: false },
-          ticks: { color: '#f8fafc', font: { size: 11, weight: 'bold' } }
+          ticks: { color: textColor, font: { size: 12, weight: 'bold' } }
         }
       }
     }
@@ -159,6 +175,8 @@ function renderOwnershipDoughnut(publicCount, privateCount) {
   if (doughnutChartInstance) {
     doughnutChartInstance.destroy();
   }
+
+  const subtextColor = getChartSubtextColor();
 
   doughnutChartInstance = new Chart(ctx, {
     type: 'doughnut',
@@ -174,7 +192,7 @@ function renderOwnershipDoughnut(publicCount, privateCount) {
       responsive: true,
       maintainAspectRatio: false,
       plugins: {
-        legend: { position: 'bottom', labels: { color: '#94a3b8', font: { size: 11 } } }
+        legend: { position: 'bottom', labels: { color: subtextColor, font: { size: 12, weight: 'bold' } } }
       }
     }
   });
