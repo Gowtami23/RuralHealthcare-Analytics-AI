@@ -1,4 +1,5 @@
 import os
+import re
 import sqlite3
 from flask import Flask, jsonify, request, send_from_directory
 
@@ -195,7 +196,21 @@ def manage_appointments():
     if request.method == 'POST':
         data = request.json or {}
         pname = data.get('patient_name', 'Anonymous')
-        contact = data.get('contact', 'N/A')
+        contact = data.get('contact', '').strip()
+        
+        # Backend Phone Number Validation (Indian 10-digit mobile standard)
+        clean_contact = re.sub(r'[\s\-\(\)\+]', '', contact)
+        if clean_contact.startswith('91') and len(clean_contact) == 12:
+            clean_contact = clean_contact[2:]
+        elif clean_contact.startswith('0') and len(clean_contact) == 11:
+            clean_contact = clean_contact[1:]
+
+        if not (len(clean_contact) == 10 and clean_contact.isdigit() and clean_contact[0] in '6789'):
+            return jsonify({
+                "success": False, 
+                "message": "Invalid phone number! Please enter a valid 10-digit mobile number starting with 6, 7, 8, or 9."
+            }), 400
+
         fname = data.get('facility_name', 'Primary Health Centre')
         district = data.get('district', 'Alwar')
         state = data.get('state', 'Rajasthan')
@@ -205,7 +220,7 @@ def manage_appointments():
         
         conn.execute(
             "INSERT INTO appointments (patient_name, contact, facility_name, district, state, dept, appointment_date, time_slot, status) VALUES (?,?,?,?,?,?,?,?,?)",
-            (pname, contact, fname, district, state, dept, adate, tslot, 'Confirmed')
+            (pname, clean_contact, fname, district, state, dept, adate, tslot, 'Confirmed')
         )
         conn.commit()
         conn.close()

@@ -287,12 +287,31 @@ async function submitAppointment(event) {
   const submitBtn = document.getElementById('btn-submit-appt');
   const statusMsg = document.getElementById('appt-status-msg');
 
+  const rawContact = document.getElementById('appt-contact').value.trim();
+  // Strip spaces, dashes, parentheses, +91 prefix, leading 0
+  let cleanedPhone = rawContact.replace(/[\s\-\(\)\+]/g, '');
+  if (cleanedPhone.startsWith('91') && cleanedPhone.length === 12) {
+    cleanedPhone = cleanedPhone.substring(2);
+  } else if (cleanedPhone.startsWith('0') && cleanedPhone.length === 11) {
+    cleanedPhone = cleanedPhone.substring(1);
+  }
+
+  // Validate 10-digit mobile number starting with 6, 7, 8, or 9
+  const phoneRegex = /^[6-9]\d{9}$/;
+  if (!phoneRegex.test(cleanedPhone)) {
+    if (statusMsg) {
+      statusMsg.className = "p-3.5 mb-3 rounded-xl text-xs font-bold border bg-rose-500/20 text-rose-300 border-rose-500/40 block";
+      statusMsg.innerHTML = `<i class="fa-solid fa-triangle-exclamation mr-1.5 text-rose-400"></i> Please enter a valid 10-digit mobile number (e.g. 9876543210 or +91 9876543210).`;
+    }
+    return;
+  }
+
   const dateVal = document.getElementById('appt-date').value || new Date().toISOString().split('T')[0];
   const slotVal = document.getElementById('appt-slot') ? document.getElementById('appt-slot').value : '10:00 AM';
 
   const payload = {
     patient_name: document.getElementById('appt-name').value,
-    contact: document.getElementById('appt-contact').value,
+    contact: cleanedPhone,
     facility_name: document.getElementById('appt-facility').value,
     dept: document.getElementById('appt-dept').value,
     appointment_date: dateVal,
