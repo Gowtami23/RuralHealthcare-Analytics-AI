@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Rural Healthcare Analytics & Patient Care Portal</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: { 50: '#eff6ff', 500: '#3b82f6', 600: '#2563eb', 700: '#1d4ed8' }
+          }
+        }
+      }
+    }
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body class="bg-slate-900 text-slate-100 min-h-screen font-sans flex flex-col">
+
+  <!-- Header -->
+  <header class="bg-slate-800/90 backdrop-blur-md border-b border-slate-700 sticky top-0 z-50 py-2">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2 flex flex-wrap justify-between items-center gap-4">
+      <div class="flex items-center space-x-4">
+        <div class="bg-blue-600 text-white p-3 rounded-2xl shadow-lg shadow-blue-500/30">
+          <i class="fa-solid fa-hospital-user text-2xl"></i>
+        </div>
+        <div>
+          <h1 class="text-2xl font-extrabold bg-gradient-to-r from-blue-400 to-indigo-300 bg-clip-text text-transparent">
+            Rural Healthcare Portal
+          </h1>
+          <p class="text-sm text-slate-400">MoHFW Analytics, Hospital Locator & Patient Care System</p>
+        </div>
+      </div>
+
+      <!-- Navigation Tabs (Increased Size & Clear Spacing) -->
+      <nav class="flex flex-wrap space-x-1.5 bg-slate-900/80 p-2 rounded-2xl border border-slate-700/60">
+        <button onclick="switchTab('tab-overview')" id="nav-tab-overview" class="tab-btn active font-semibold transition-all">
+          <i class="fa-solid fa-chart-line mr-2 text-base"></i>Summary
+        </button>
+        <button onclick="switchTab('tab-locator')" id="nav-tab-locator" class="tab-btn font-semibold transition-all">
+          <i class="fa-solid fa-location-dot mr-2 text-emerald-400 text-base"></i>Hospital Locator
+        </button>
+        <button onclick="switchTab('tab-appointments')" id="nav-tab-appointments" class="tab-btn font-semibold transition-all">
+          <i class="fa-solid fa-calendar-check mr-2 text-indigo-400 text-base"></i>Appointments
+        </button>
+        <button onclick="switchTab('tab-reminders')" id="nav-tab-reminders" class="tab-btn font-semibold transition-all">
+          <i class="fa-solid fa-clock mr-2 text-amber-400 text-base"></i>Reminders
+        </button>
+        <button onclick="switchTab('tab-emergency')" id="nav-tab-emergency" class="tab-btn font-semibold transition-all bg-rose-500/10 text-rose-300 border border-rose-500/20">
+          <i class="fa-solid fa-truck-medical mr-2 text-rose-400 text-base"></i>Emergency SOS
+        </button>
+        <button onclick="switchTab('tab-records')" id="nav-tab-records" class="tab-btn font-semibold transition-all">
+          <i class="fa-solid fa-folder-open mr-2 text-blue-400 text-base"></i>Health Records
+        </button>
+        <button onclick="switchTab('tab-healthinfo')" id="nav-tab-healthinfo" class="tab-btn font-semibold transition-all">
+          <i class="fa-solid fa-book-medical mr-2 text-teal-400 text-base"></i>Health Guidance
+        </button>
+        <button onclick="switchTab('tab-rhadi')" id="nav-tab-rhadi" class="tab-btn font-semibold transition-all">
+          <i class="fa-solid fa-trophy mr-2 text-amber-300 text-base"></i>State RHADI
+        </button>
+        <button onclick="switchTab('tab-validation')" id="nav-tab-validation" class="tab-btn font-semibold transition-all">
+          <i class="fa-solid fa-shield-heart mr-2 text-rose-300 text-base"></i>MMR Analytics
+        </button>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Main Container -->
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-grow w-full">
+
+    <!-- KPI Row (Increased Font & Padding) -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+      <div class="bg-slate-800/60 border border-slate-700/80 rounded-2xl p-6 shadow-xl hover:border-blue-500/50 transition">
+        <div class="flex justify-between items-start">
+          <div>
+            <p class="text-sm font-semibold uppercase tracking-wider text-slate-400">Total Facilities</p>
+            <h3 id="kpi-facilities" class="text-4xl font-black text-white mt-1">--</h3>
+          </div>
+          <div class="p-3.5 bg-blue-500/10 text-blue-400 rounded-2xl">
+            <i class="fa-solid fa-building-circle-check text-2xl"></i>
+          </div>
+        </div>
+        <p class="text-sm text-slate-400 mt-4 flex items-center">
+          <span class="text-emerald-400 font-bold mr-1.5"><i class="fa-solid fa-check"></i> 92.0%</span> Public Sector Facilities
+        </p>
+      </div>
+
+      <div class="bg-slate-800/60 border border-slate-700/80 rounded-2xl p-6 shadow-xl hover:border-indigo-500/50 transition">
+        <div class="flex justify-between items-start">
+          <div>
+            <p class="text-sm font-semibold uppercase tracking-wider text-slate-400">Reported Deliveries</p>
+            <h3 id="kpi-deliveries" class="text-4xl font-black text-white mt-1">--</h3>
+          </div>
+          <div class="p-3.5 bg-indigo-500/10 text-indigo-400 rounded-2xl">
+            <i class="fa-solid fa-baby text-2xl"></i>
+          </div>
+        </div>
+        <p class="text-sm text-slate-400 mt-4">
+          Across 5 Financial Years (2020-2025)
+        </p>
+      </div>
+
+      <div class="bg-slate-800/60 border border-slate-700/80 rounded-2xl p-6 shadow-xl hover:border-amber-500/50 transition">
+        <div class="flex justify-between items-start">
+          <div>
+            <p class="text-sm font-semibold uppercase tracking-wider text-slate-400">C-Section Rate</p>
+            <h3 id="kpi-csec-rate" class="text-4xl font-black text-white mt-1">--%</h3>
+          </div>
+          <div class="p-3.5 bg-amber-500/10 text-amber-400 rounded-2xl">
+            <i class="fa-solid fa-user-nurse text-2xl"></i>
+          </div>
+        </div>
+        <p class="text-sm text-slate-400 mt-4 flex items-center">
+          <span class="text-amber-400 font-bold mr-1.5">WHO Ideal:</span> 10% - 15% Band
+        </p>
+      </div>
+
+      <div class="bg-slate-800/60 border border-slate-700/80 rounded-2xl p-6 shadow-xl hover:border-emerald-500/50 transition">
+        <div class="flex justify-between items-start">
+          <div>
+            <p class="text-sm font-semibold uppercase tracking-wider text-slate-400">Top Model State</p>
+            <h3 id="kpi-top-state" class="text-3xl font-black text-emerald-400 mt-1">--</h3>
+          </div>
+          <div class="p-3.5 bg-emerald-500/10 text-emerald-400 rounded-2xl">
+            <i class="fa-solid fa-award text-2xl"></i>
+          </div>
+        </div>
+        <p class="text-sm text-slate-400 mt-4 flex items-center">
+          <span class="text-emerald-400 font-bold mr-1.5" id="kpi-top-score">Score: --</span> / 100
+        </p>
+      </div>
+    </div>
+
+    <!-- TAB 1: EXECUTIVE OVERVIEW -->
+    <div id="tab-overview" class="tab-content space-y-6">
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div class="lg:col-span-2 bg-slate-800/60 border border-slate-700 rounded-2xl p-6 shadow-xl">
+          <div class="flex justify-between items-center mb-4">
+            <div>
+              <h2 class="text-xl font-bold text-white">State RHADI Index Rankings</h2>
+              <p class="text-sm text-slate-400">Rural Healthcare Accessibility & Delivery Index (0 to 100 Scale)</p>
+            </div>
+            <span class="px-3.5 py-1.5 bg-emerald-500/20 text-emerald-300 text-xs font-bold rounded-full border border-emerald-500/30">
+              Verified MoHFW Data
+            </span>
+          </div>
+          <div class="relative h-[440px]">
+            <canvas id="chart-rhadi-state"></canvas>
+          </div>
+        </div>
+
+        <div class="space-y-6">
+          <div class="bg-slate-800/60 border border-slate-700 rounded-2xl p-6 shadow-xl">
+            <h2 class="text-xl font-bold text-white mb-2">Public vs Private Share</h2>
+            <p class="text-sm text-slate-400 mb-4">Facility distribution by management ownership</p>
+            <div class="relative h-[220px] flex justify-center">
+              <canvas id="chart-ownership-doughnut"></canvas>
+            </div>
+          </div>
+
+          <div class="bg-slate-800/60 border border-slate-700 rounded-2xl p-6 shadow-xl">
+            <h3 class="text-base font-bold text-white mb-2"><i class="fa-solid fa-triangle-exclamation text-rose-400 mr-2"></i>Underserved Priority Target Regions</h3>
+            <p class="text-sm text-slate-300 leading-relaxed">
+              States at the bottom of the RHADI rankings (<strong>Bihar: 9.8</strong>, <strong>Uttar Pradesh: 18.2</strong>, <strong>Jharkhand: 24.5</strong>) represent the highest priority targets for primary healthcare infrastructure and doctor allocation.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 2: NEARBY HOSPITAL LOCATOR -->
+    <div id="tab-locator" class="tab-content hidden space-y-6">
+      <div class="bg-slate-800/60 border border-slate-700 rounded-2xl p-6 shadow-xl">
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
+          <div>
+            <h2 class="text-2xl font-bold text-white"><i class="fa-solid fa-location-dot text-emerald-400 mr-2"></i>Nearby Hospital & Health-Center Locator</h2>
+            <p class="text-sm text-slate-400">Search and locate Sub-Centres, PHCs, CHCs, and Hospitals by District or State</p>
+          </div>
+          <div class="flex gap-3">
+            <input type="text" id="locator-query" oninput="searchLocator()" placeholder="Search hospital name or district..." class="bg-slate-900 border border-slate-700 text-slate-100 text-sm rounded-xl px-4 py-2.5 w-72">
+          </div>
+        </div>
+
+        <div id="locator-results" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 3: APPOINTMENT MANAGEMENT (FIXED & FULLY EDITABLE DATE PICKER) -->
+    <div id="tab-appointments" class="tab-content hidden space-y-6">
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- Form -->
+        <div class="bg-slate-800/60 border border-slate-700 rounded-2xl p-6 shadow-xl">
+          <h2 class="text-xl font-bold text-white mb-5"><i class="fa-solid fa-calendar-plus text-indigo-400 mr-2"></i>Book Primary Health Appointment</h2>
+          <form onsubmit="submitAppointment(event)" class="space-y-4">
+            <div id="appt-status-msg" class="hidden p-3.5 rounded-xl text-xs font-bold border transition-all"></div>
+            <div>
+              <label class="text-sm font-bold text-slate-200 block mb-1.5">Patient Name</label>
+              <input type="text" id="appt-name" required placeholder="Full Name" class="w-full bg-slate-900 border border-slate-700 text-slate-100 text-sm rounded-xl p-3 focus:border-indigo-500">
+            </div>
+            <div>
+              <label class="text-sm font-bold text-slate-200 block mb-1.5">Contact Phone</label>
+              <input type="text" id="appt-contact" required placeholder="Phone Number" class="w-full bg-slate-900 border border-slate-700 text-slate-100 text-sm rounded-xl p-3 focus:border-indigo-500">
+            </div>
+            <div>
+              <label class="text-sm font-bold text-slate-200 block mb-1.5">Target Health Facility</label>
+              <input type="text" id="appt-facility" required placeholder="e.g. Alwar Satellite Hospital" class="w-full bg-slate-900 border border-slate-700 text-slate-100 text-sm rounded-xl p-3 focus:border-indigo-500">
+            </div>
+            <div>
+              <label class="text-sm font-bold text-slate-200 block mb-1.5">Department</label>
+              <select id="appt-dept" class="w-full bg-slate-900 border border-slate-700 text-slate-100 text-sm rounded-xl p-3 focus:border-indigo-500">
+                <option value="General Primary Care">General Primary Care</option>
+                <option value="Maternal & Child Care">Maternal & Child Care</option>
+                <option value="Immunization & Vaccination">Immunization & Vaccination</option>
+              </select>
+            </div>
+
+            <!-- PROMINENT FULLY EDITABLE DATE & TIME PICKER -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-1">
+              <div>
+                <label class="text-sm font-bold text-slate-200 block mb-1.5"><i class="fa-solid fa-calendar-day text-indigo-400 mr-1.5"></i>Appointment Date</label>
+                <input type="date" id="appt-date" required class="w-full bg-slate-900 border border-slate-600 text-white font-semibold text-sm rounded-xl p-3 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/30 cursor-pointer">
+              </div>
+              <div>
+                <label class="text-sm font-bold text-slate-200 block mb-1.5"><i class="fa-solid fa-clock text-indigo-400 mr-1.5"></i>Preferred Time Slot</label>
+                <select id="appt-slot" class="w-full bg-slate-900 border border-slate-600 text-white font-semibold text-sm rounded-xl p-3 focus:border-indigo-500">
+                  <option value="09:00 AM">09:00 AM</option>
+                  <option value="10:00 AM" selected>10:00 AM</option>
+                  <option value="11:30 AM">11:30 AM</option>
+                  <option value="02:00 PM">02:00 PM</option>
+                  <option value="04:00 PM">04:00 PM</option>
+                </select>
+              </div>
+            </div>
+
+            <button type="submit" id="btn-submit-appt" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-sm py-3.5 rounded-xl shadow-xl transition mt-4 flex items-center justify-center">
+              <i class="fa-solid fa-paper-plane mr-2 text-base"></i>Submit Appointment Request
+            </button>
+          </form>
+        </div>
+
+        <!-- Appointment List -->
+        <div class="lg:col-span-2 bg-slate-800/60 border border-slate-700 rounded-2xl p-6 shadow-xl">
+          <h2 class="text-xl font-bold text-white mb-5"><i class="fa-solid fa-list-check text-indigo-400 mr-2"></i>Scheduled Appointments</h2>
+          <div id="appointments-list" class="space-y-4">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 4: MEDICINE & REMINDERS -->
+    <div id="tab-reminders" class="tab-content hidden space-y-6">
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div class="bg-slate-800/60 border border-slate-700 rounded-2xl p-6 shadow-xl">
+          <h2 class="text-xl font-bold text-white mb-5"><i class="fa-solid fa-bell text-amber-400 mr-2"></i>Add Health Reminder</h2>
+          <form onsubmit="submitReminder(event)" class="space-y-4">
+            <div>
+              <label class="text-sm font-bold text-slate-200 block mb-1.5">Reminder Title / Medicine Name</label>
+              <input type="text" id="rem-title" required placeholder="e.g. Iron & Folic Acid Tablet" class="w-full bg-slate-900 border border-slate-700 text-slate-100 text-sm rounded-xl p-3">
+            </div>
+            <div class="grid grid-cols-2 gap-4">
+              <div>
+                <label class="text-sm font-bold text-slate-200 block mb-1.5">Type</label>
+                <select id="rem-type" class="w-full bg-slate-900 border border-slate-700 text-slate-100 text-sm rounded-xl p-3">
+                  <option value="Medicine">Medicine Intake</option>
+                  <option value="Appointment">Upcoming Checkup</option>
+                </select>
+              </div>
+              <div>
+                <label class="text-sm font-bold text-slate-200 block mb-1.5">Time</label>
+                <input type="text" id="rem-time" placeholder="e.g. 09:00 AM" required class="w-full bg-slate-900 border border-slate-700 text-slate-100 text-sm rounded-xl p-3">
+              </div>
+            </div>
+            <button type="submit" class="w-full bg-amber-600 hover:bg-amber-500 text-white font-bold text-sm py-3.5 rounded-xl shadow-xl transition mt-3">
+              Save Reminder
+            </button>
+          </form>
+        </div>
+
+        <div class="lg:col-span-2 bg-slate-800/60 border border-slate-700 rounded-2xl p-6 shadow-xl">
+          <h2 class="text-xl font-bold text-white mb-5"><i class="fa-solid fa-clock-rotate-left text-amber-400 mr-2"></i>Active Health Reminders</h2>
+          <div id="reminders-list" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 5: EMERGENCY CONTACT & SOS -->
+    <div id="tab-emergency" class="tab-content hidden space-y-6">
+      <div class="bg-slate-800/60 border border-slate-700 rounded-2xl p-6 shadow-xl text-center">
+        <h2 class="text-3xl font-extrabold text-rose-400 mb-3"><i class="fa-solid fa-triangle-exclamation mr-2"></i>National Rural Health Emergency SOS & Helplines</h2>
+        <p class="text-sm text-slate-300 mb-8">One-click emergency contact dispatch for rural medical distress</p>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+          <div class="bg-rose-500/10 border border-rose-500/30 rounded-2xl p-6 flex flex-col items-center">
+            <div class="p-4 bg-rose-500/20 text-rose-400 rounded-full mb-3">
+              <i class="fa-solid fa-truck-medical text-4xl"></i>
+            </div>
+            <h3 class="text-xl font-bold text-white">108 Emergency Ambulance</h3>
+            <p class="text-xs text-slate-400 mt-1 mb-5">24x7 Free National Medical Emergency Dispatch</p>
+            <a href="tel:108" class="w-full bg-rose-600 hover:bg-rose-500 text-white font-bold py-3 rounded-xl text-sm">Call 108 Now</a>
+          </div>
+
+          <div class="bg-amber-500/10 border border-amber-500/30 rounded-2xl p-6 flex flex-col items-center">
+            <div class="p-4 bg-amber-500/20 text-amber-400 rounded-full mb-3">
+              <i class="fa-solid fa-person-breastfeeding text-4xl"></i>
+            </div>
+            <h3 class="text-xl font-bold text-white">102 Maternal Helpline</h3>
+            <p class="text-xs text-slate-400 mt-1 mb-5">Janani Shishu Suraksha Karyakram (JSSK)</p>
+            <a href="tel:102" class="w-full bg-amber-600 hover:bg-amber-500 text-white font-bold py-3 rounded-xl text-sm">Call 102 Now</a>
+          </div>
+
+          <div class="bg-blue-500/10 border border-blue-500/30 rounded-2xl p-6 flex flex-col items-center">
+            <div class="p-4 bg-blue-500/20 text-blue-400 rounded-full mb-3">
+              <i class="fa-solid fa-headset text-4xl"></i>
+            </div>
+            <h3 class="text-xl font-bold text-white">104 Medical Advice</h3>
+            <p class="text-xs text-slate-400 mt-1 mb-5">24x7 Tele-Consultation & Health Advisory</p>
+            <a href="tel:104" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 rounded-xl text-sm">Call 104 Now</a>
+          </div>
+
+          <div class="bg-emerald-500/10 border border-emerald-500/30 rounded-2xl p-6 flex flex-col items-center">
+            <div class="p-4 bg-emerald-500/20 text-emerald-400 rounded-full mb-3">
+              <i class="fa-solid fa-child text-4xl"></i>
+            </div>
+            <h3 class="text-xl font-bold text-white">1098 Child Emergency</h3>
+            <p class="text-xs text-slate-400 mt-1 mb-5">National Child Healthcare Helpline</p>
+            <a href="tel:1098" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 rounded-xl text-sm">Call 1098 Now</a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 6: PATIENT HEALTH RECORDS ORGANIZER -->
+    <div id="tab-records" class="tab-content hidden space-y-6">
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div class="bg-slate-800/60 border border-slate-700 rounded-2xl p-6 shadow-xl">
+          <h2 class="text-xl font-bold text-white mb-5"><i class="fa-solid fa-file-medical text-blue-400 mr-2"></i>Add Patient Health Record</h2>
+          <form onsubmit="submitRecord(event)" class="space-y-4">
+            <div>
+              <label class="text-sm font-bold text-slate-200 block mb-1.5">Patient Name</label>
+              <input type="text" id="rec-name" required placeholder="Full Name" class="w-full bg-slate-900 border border-slate-700 text-slate-100 text-sm rounded-xl p-3">
+            </div>
+            <div class="grid grid-cols-2 gap-4">
+              <div>
+                <label class="text-sm font-bold text-slate-200 block mb-1.5">Age</label>
+                <input type="number" id="rec-age" required value="26" class="w-full bg-slate-900 border border-slate-700 text-slate-100 text-sm rounded-xl p-3">
+              </div>
+              <div>
+                <label class="text-sm font-bold text-slate-200 block mb-1.5">Blood Group</label>
+                <input type="text" id="rec-blood" required placeholder="O+, B+, etc." class="w-full bg-slate-900 border border-slate-700 text-slate-100 text-sm rounded-xl p-3">
+              </div>
+            </div>
+            <div>
+              <label class="text-sm font-bold text-slate-200 block mb-1.5">Condition / Medical Event</label>
+              <input type="text" id="rec-cond" required placeholder="e.g. Prenatal Pregnancy ANC" class="w-full bg-slate-900 border border-slate-700 text-slate-100 text-sm rounded-xl p-3">
+            </div>
+            <div>
+              <label class="text-sm font-bold text-slate-200 block mb-1.5">Clinical Notes & Observations</label>
+              <textarea id="rec-notes" rows="3" placeholder="Enter diagnostic observations, BP, Hemoglobin, prescriptions..." class="w-full bg-slate-900 border border-slate-700 text-slate-100 text-sm rounded-xl p-3"></textarea>
+            </div>
+            <button type="submit" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold text-sm py-3.5 rounded-xl shadow-xl transition mt-3">
+              Save Health Record
+            </button>
+          </form>
+        </div>
+
+        <div class="lg:col-span-2 bg-slate-800/60 border border-slate-700 rounded-2xl p-6 shadow-xl">
+          <h2 class="text-xl font-bold text-white mb-5"><i class="fa-solid fa-folder-closed text-blue-400 mr-2"></i>Patient Health Locker & History</h2>
+          <div id="records-list" class="space-y-4">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 7: BASIC HEALTH GUIDANCE KNOWLEDGE HUB -->
+    <div id="tab-healthinfo" class="tab-content hidden space-y-6">
+      <div class="bg-slate-800/60 border border-slate-700 rounded-2xl p-6 shadow-xl">
+        <h2 class="text-2xl font-bold text-white mb-2"><i class="fa-solid fa-book-medical text-teal-400 mr-2"></i>Basic Health Information & Rural Care Guidance</h2>
+        <p class="text-sm text-slate-400 mb-6">Official health guidelines, maternal protocols, and child immunization schedules</p>
+
+        <div id="healthinfo-articles" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 8: STATE RHADI & SUB-INDICES -->
+    <div id="tab-rhadi" class="tab-content hidden space-y-6">
+      <div class="bg-slate-800/60 border border-slate-700 rounded-2xl p-6 shadow-xl">
+        <h2 class="text-2xl font-bold text-white mb-2">State Level RHADI & Sub-Indices (`rhadi_state.csv`)</h2>
+        <p class="text-sm text-slate-400 mb-5">Splitting RHADI into Accessibility Sub-Index (PHCs + Staffing) and Quality Sub-Index (Public Share + C-Sec Adequacy)</p>
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-sm text-slate-300">
+            <thead class="bg-slate-900/80 text-xs uppercase text-slate-400 font-bold">
+              <tr>
+                <th class="py-3.5 px-4">Rank</th>
+                <th class="py-3.5 px-4">State / UT</th>
+                <th class="py-3.5 px-4">Combined RHADI</th>
+                <th class="py-3.5 px-4">Accessibility Sub-Index</th>
+                <th class="py-3.5 px-4">Quality Sub-Index</th>
+                <th class="py-3.5 px-4">PHCs / 100k Pop</th>
+                <th class="py-3.5 px-4">Staffing Adequacy</th>
+              </tr>
+            </thead>
+            <tbody id="table-rhadi-state-body" class="divide-y divide-slate-700/60">
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 9: MMR VALIDATION -->
+    <div id="tab-validation" class="tab-content hidden space-y-6">
+      <div class="bg-slate-800/60 border border-slate-700 rounded-2xl p-6 shadow-xl">
+        <h2 class="text-2xl font-bold text-white mb-2">External Health Outcomes Validation (MMR & IMR)</h2>
+        <p class="text-sm text-slate-400 mb-6">Validating RHADI scores against official SRS Maternal Mortality Ratio (MMR) & Infant Mortality Rate (IMR)</p>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div class="bg-slate-900/60 border border-slate-700 p-5 rounded-2xl">
+            <h3 class="text-base font-bold text-slate-200 mb-3">RHADI vs Maternal Mortality Ratio (r = -0.27)</h3>
+            <img src="/plots/8_rhadi_vs_mortality_validation.png" class="rounded-xl w-full">
+          </div>
+          <div class="bg-slate-900/60 border border-slate-700 p-5 rounded-2xl">
+            <h3 class="text-base font-bold text-slate-200 mb-3">Accessibility vs Quality Quadrant Analysis</h3>
+            <img src="/plots/7_accessibility_vs_quality_quadrants.png" class="rounded-xl w-full">
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <footer class="bg-slate-800/50 border-t border-slate-800 py-6 text-center text-sm text-slate-400">
+    <p>Ministry of Health & Family Welfare (MoHFW) Rural Healthcare Analytics Portal &bull; Generated for Data Analytics Internship Project</p>
+  </footer>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>

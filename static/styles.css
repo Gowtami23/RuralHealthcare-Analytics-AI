@@ -1,0 +1,65 @@
+/* Custom Dashboard Styles - Increased Typography & Component Sizing */
+:root {
+  color-scheme: dark;
+}
+
+.tab-btn {
+  font-size: 0.95rem !important; /* 15px */
+  padding: 0.65rem 1.1rem !important;
+  border-radius: 0.75rem !important;
+}
+
+.tab-btn.active {
+  background-color: #2563eb;
+  color: #ffffff;
+  box-shadow: 0 4px 14px rgba(37, 99, 235, 0.4);
+}
+
+.tab-btn:not(.active) {
+  color: #cbd5e1;
+}
+
+.tab-btn:not(.active):hover {
+  color: #ffffff;
+  background-color: rgba(255, 255, 255, 0.08);
+}
+
+/* Date Picker Input Fix - Spacious, Fully Editable */
+input[type="date"], input[type="text"], input[type="number"], select, textarea {
+  font-size: 0.95rem !important; /* 15px */
+  padding: 0.75rem 1rem !important;
+  color-scheme: dark !important;
+  background-color: #0f172a !important;
+  color: #f8fafc !important;
+  border-color: #334155 !important;
+}
+
+input[type="date"]::-webkit-calendar-picker-indicator {
+  filter: invert(1);
+  cursor: pointer;
+  padding: 4px;
+  font-size: 1.1rem;
+}
+
+input[type="date"]::-webkit-datetime-edit-fields-wrapper {
+  color: #f8fafc !important;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #0f172a;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #334155;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #475569;
+}
