@@ -62,7 +62,7 @@ RuralHealthcare/
 
 ### 1. Clone the Repository
 ```bash
-git clone https://github.com/YOUR_USERNAME/RuralHealthcare-Analytics-AI.git
+git clone https://github.com/Gowtami23/RuralHealthcare-Analytics-AI.git
 cd RuralHealthcare-Analytics-AI
 ```
 
