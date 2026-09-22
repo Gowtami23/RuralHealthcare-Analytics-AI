@@ -363,5 +363,6 @@ def get_healthinfo():
     return jsonify(articles)
 
 if __name__ == '__main__':
-    print("Starting Rural Healthcare Dashboard Web Server on http://127.0.0.1:8000...")
-    app.run(host='0.0.0.0', port=8000, debug=False)
+    port = int(os.environ.get('PORT', 8000))
+    print(f"Starting Rural Healthcare Dashboard Web Server on http://127.0.0.1:{port}...")
+    app.run(host='0.0.0.0', port=port, debug=False)
