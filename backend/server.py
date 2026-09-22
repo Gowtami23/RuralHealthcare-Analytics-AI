@@ -3,10 +3,12 @@ import re
 import sqlite3
 from flask import Flask, jsonify, request, send_from_directory
 
-app = Flask(__name__, static_folder='static')
-folder = r"C:\Users\Kattunga Gowtami\Downloads\RuralHealthcare"
-db_path = os.path.join(folder, "rural_healthcare.db")
-plots_dir = os.path.join(folder, "eda_plots")
+base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+db_path = os.path.join(base_dir, "database", "rural_healthcare.db")
+plots_dir = os.path.join(base_dir, "analysis", "eda_plots")
+frontend_dir = os.path.join(base_dir, "frontend")
+
+app = Flask(__name__, static_folder=frontend_dir)
 
 def get_db_connection():
     conn = sqlite3.connect(db_path)
@@ -70,11 +72,12 @@ init_db()
 
 @app.route('/')
 def index():
-    return send_from_directory(os.path.join(folder, 'static'), 'index.html')
+    return send_from_directory(frontend_dir, 'index.html')
 
 @app.route('/static/<path:filename>')
+@app.route('/frontend/<path:filename>')
 def static_files(filename):
-    return send_from_directory(os.path.join(folder, 'static'), filename)
+    return send_from_directory(frontend_dir, filename)
 
 @app.route('/plots/<path:filename>')
 def plot_files(filename):

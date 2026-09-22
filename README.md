@@ -39,21 +39,65 @@ This project presents a comprehensive **Data Analytics & AI Solution** for evalu
 
 ```text
 RuralHealthcare/
-├── server.py                        # Flask Backend REST API & Server
-├── train_ml_models.py               # Supervised & Unsupervised ML Training Script
-├── extract_rhs_data.py              # MoHFW PDF RHS Data Extraction Script
-├── rural_healthcare.db              # SQLite Database
-├── requirements.txt                 # Project Dependencies
-├── cleaned_facility_deliveries_2020_2025.csv  # Cleaned Dataset (36,356 records)
-├── rhadi_state.csv                  # State Level Dual-Index RHADI Scores
-├── rhadi_district.csv               # District Level RHADI Scores
-├── eda_plots/                       # Exploratory Data Analysis Charts
-├── ml_plots/                        # Machine Learning Evaluation Plots
-├── saved_models/                    # Trained Model Artifacts (.joblib)
-└── static/                          # Web Portal Frontend
-    ├── index.html
-    ├── app.js
-    └── styles.css
+│
+├── README.md
+├── requirements.txt
+├── .gitignore
+│
+├── backend/
+│   ├── server.py
+│   └── extract_rhs_data.py
+│
+├── database/
+│   └── rural_healthcare.db
+│
+├── datasets/
+│   ├── cleaned_facility_deliveries_2020_2025.csv
+│   ├── cleaned_state_demographic_targets_2025_2027.csv
+│   ├── district_level_healthcare_summary.csv
+│   ├── rhadi_state.csv
+│   ├── rhadi_district.csv
+│   ├── rural_urban_gap.csv
+│   ├── ml_predictions_and_clusters.csv
+│   ├── scaled_encoded_facility_features.csv
+│   └── tmp_facility_deliveries.csv
+│
+├── analysis/
+│   ├── eda_plots/
+│   ├── extracted_tables/
+│   └── ml_plots/
+│
+├── models/
+│   └── saved_models/
+│       ├── cluster_scaler.joblib
+│       ├── kmeans_cluster_model.joblib
+│       └── rf_regressor_model.joblib
+│
+├── frontend/
+│   ├── index.html
+│   ├── app.js
+│   └── styles.css
+│
+├── docs/
+│   ├── DATA_PREPROCESSING_COMPLETED.md
+│   ├── EDA_ANALYSIS_REPORT.md
+│   ├── ML_AI_MODELING_REPORT.md
+│   └── RURAL_HEALTHCARE_PROBLEM_STATEMENT_GUIDE.md
+│
+└── source_documents/
+    ├── Critical_Issues_Maternal_Child_Health_2015-16.pdf
+    ├── Dynamics_of_Healthcare_Services_in_India_2020-21.pdf
+    ├── Final_HMIS_Handbook.pdf
+    ├── HDI_2022-23.pdf
+    ├── Health_Dynamics_of_India_2023-24.pdf
+    ├── Lok_Sabha_Unstarred_Q2388_Data_2026.xlsx
+    ├── Rural_Health_Statistics_2016-17.pdf
+    ├── Rural_Health_Statistics_2017-18.pdf
+    ├── Rural_Health_Statistics_2018-19.pdf
+    ├── Rural_Health_Statistics_2019-20.pdf
+    ├── Rural_Health_Statistics_2020-21.pdf
+    ├── Rural_Health_Statistics_2021-22.pdf
+    └── Target_PWs_Live_Births_Infant_Estimates_2024-26.pdf
 ```
 
 ---
