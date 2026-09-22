@@ -43,6 +43,10 @@ RuralHealthcare/
 ├── README.md
 ├── requirements.txt
 ├── .gitignore
+├── venv/
+│   ├── Scripts/
+│   ├── Lib/
+│   └── ...
 │
 ├── backend/
 │   ├── server.py
